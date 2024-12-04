@@ -1,0 +1,18 @@
+<div>
+    <h1>Hola , {{user.name}}</h1>
+    {{!-- si admin es True -> Entonces Muestro los Productos --}}
+
+    {{#if isAdmin}}
+    {{!-- Iteramos EL Array --}}
+    {{#each food}}
+    <div>
+        <p>Nombre:{{this.name}}</p>
+        <p>Precio: {{this.price}}</p>
+    </div>
+    {{/each}}
+
+    {{!-- si admin es Folse -> No Tienes Los PErmisos NEcesarios --}}
+    {{else}}
+    <p>No Tienes Los Permisos Necesarios</p>
+    {{/if}}
+</div>
