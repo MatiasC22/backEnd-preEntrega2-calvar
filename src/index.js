@@ -2,91 +2,66 @@ import express from "express";
 import __dirname from "./utils.js";
 import handlebars from 'express-handlebars';
 import viewsRoutes from './routes/views.routes.js';
-
-import {Server, Socket} from 'socket.io'
+import ProductManager from './services/products.mananger.js';
+import { Server } from 'socket.io';
 
 const app = express();
 const PORT = 9090;
 
-// Midelware de configuracion, son configuraciones del 
-// trafico entrante de los puertos
-
+// Middleware
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
-//---------Configuramos Handlebars ---------------//
-
-app.engine('handlebars',handlebars.engine());
-app.set('views', __dirname+ '/views');
+// Configurar Handlebars
+app.engine('handlebars', handlebars.engine());
+app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
 
-
-// console.log(__dirname)
-
-// Le indicamos al server que el directorio publico es publico!!
+// Directorio público
 app.use(express.static(__dirname + '/public'));
 
-
-//---------Ruta de Prueba Parta HBS---
-
-
-
-
-
-
-//Enpoint de telemetria , es una forma de saber si el servidor esta arriba 
-app.get('/ping',(req,res)=>{
-    res.render('index',{});
-})
-
-//Routes
-
-
+// Rutas
 app.use("/", viewsRoutes);
 
-const httpServer = app.listen(PORT,()=>{
+// Inicializamos el servidor HTTP
+const httpServer = app.listen(PORT, () => {
     console.log(`Server corriendo en el puerto ${PORT}`);
-})
+});
 
-
-
-// ------------Instanciamos Socket.io------------
-
+// Inicializamos Socket.io
 const socketServer = new Server(httpServer);
 
+// Instanciamos ProductManager
+const productManager = new ProductManager();
 
-//---- Creamos un Canal de COmunicacion hacia el Cliente
+// Configuramos eventos de WebSocket
+socketServer.on('connection', async (socket) => {
+    console.log('Nuevo cliente conectado');
 
-console.log("test 01")
+    // Emitir lista inicial de productos
+    socket.emit('updateProducts', await productManager.getAllProducts());
 
-const logs = [];
+    // Escuchar eventos para agregar productos
+    socket.on('addProduct', async (productData) => {
+        try {
+            await productManager.addProduct(productData);
+            const updatedProducts = await productManager.getAllProducts();
+            socketServer.emit('updateProducts', updatedProducts);
+        } catch (error) {
+            console.error("Error al agregar producto:", error);
+            socket.emit('error', { message: 'No se pudo agregar el producto.' });
+        }
+    });
 
-socketServer.on ('connection', socket =>{
-    //Todo LO que sea SOCKET, VA AQUI!!!
-    // socket.on('mensaje',data =>{
-    //     console.log("Recibido", data);
-    //     socket.emit('mensaje', "Hola Soy el Servidor");
-
-    // })
-
-    socket.emit("mensaje_02", "Hola soy el server");
-
-    socket.broadcast.emit('broadcast',"Este evento es para todos los sockets, menos el socket desde que se emitio el mensaje")
-
-    socketServer.emit("evento_ para_ Todos", "Evento PAra todos los Sochets")
-
-    //-------Segunda Parte-----------//
-
-    socket.on('mensaje',data =>{
-        // console.log("Recibido", data);
-        
-        logs.push ({socketId: socket.id, message: data})
-        socketServer.emit('logs',{logs});
-    })
-
-
-
-// console.log("Cliente Prueva 02")
-
-
-})
+    // Escuchar eventos para eliminar productos
+    socket.on('deleteProduct', async (productId) => {
+        try {
+            await productManager.deleteProduct(productId);
+            const updatedProducts = await productManager.getAllProducts();
+            socketServer.emit('updateProducts', updatedProducts);
+        } catch (error) {
+            console.error("Error al eliminar producto:", error);
+            socket.emit('error', { message: 'No se pudo eliminar el producto.' });
+        }
+    });
+});

@@ -1,37 +1,19 @@
-import {Router} from "express";
+import { Router } from 'express';
+import ProductManager from '../services/products.mananger.js';
 
-const router = new Router();
+const router = Router();
+const productManager = new ProductManager();
 
-// let food = [
-//     {name: "Hamburguesa", price: "100"},
-//     {name: "Lasagña", price: "90"},
-//     {name: "Banana", price: "80"},
-//     {name: "Rabioles", price: "70"},
-//     {name: "Soda", price: "10"}
-// ]
+// Ruta Home: Lista de productos
+router.get('/home', async (req, res) => {
+    const products = await productManager.getAllProducts();
+    res.render('home', { products });
+});
 
-
-// router.get('/food',(req,res)=>{
-//     let userData = {
-//         name:"Jesus",
-//         last_name:"Gonzales",
-//         role:"admin",
-//     }
-
-//     res.render("food",{
-//         user: userData,
-//         isAdmin: userData.role == 'admin',
-//         food
-//     })
-// })
-
-
-router.get('/message',(req,res)=>{
-    
-    res.render('messages')
-})
-    
-
-
+// Ruta RealTimeProducts: Lista en tiempo real
+router.get('/realtimeproducts', async (req, res) => {
+    const products = await productManager.getAllProducts();
+    res.render('realTimeProducts', { products });
+});
 
 export default router;
