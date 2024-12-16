@@ -1,7 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
+import __dirname from '../utils.js';
 
-const productosFilePath = path.resolve('data','productos.json');
+
+const productosFilePath = path.join(__dirname, 'data', 'productos.json');
 
 
 export default class ProductMananger{   
@@ -78,6 +80,11 @@ export default class ProductMananger{
 
      //------deleteProduct---------//
 
+     async deleteAllProducts() {
+        this.products = [];
+        await this.saveToFile(); // Guardar cambios en el archivo
+    }
+    
      deleteProduct(id){
         const productIndex = this.products.findIndex(produc => produc.id === id);
         if(productIndex === -1) return null;

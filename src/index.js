@@ -24,9 +24,7 @@ app.get('/ping', (req, res) => {
     res.render("index")
 })
 
-app.get('/realtimeproducts', (req, res) => {
-    res.render("realTimeProducts")
-})
+
 
 // Rutas
 app.use("/", viewsRoutes);
@@ -62,14 +60,30 @@ socketServer.on('connection', async (socket) => {
     });
 
     // Escuchar eventos para eliminar productos
+    // Eliminar un producto específico
     socket.on('deleteProduct', async (productId) => {
         try {
-            await productManager.deleteProduct(productId);
-            const updatedProducts = await productManager.getAllProducts();
-            socketServer.emit('updateProducts', updatedProducts);
+            const deletedProduct = await productManager.deleteProduct(productId);
+            if (deletedProduct) {
+                const updatedProducts = await productManager.getAllProducts();
+                socketServer.emit('updateProducts', updatedProducts);
+            } else {
+                socket.emit('error', { message: 'Producto no encontrado.' });
+            }
         } catch (error) {
             console.error("Error al eliminar producto:", error);
             socket.emit('error', { message: 'No se pudo eliminar el producto.' });
+        }
+    });
+
+    // Eliminar todos los productos
+    socket.on('deleteAllProducts', async () => {
+        try {
+            await productManager.deleteAllProducts();
+            socketServer.emit('updateProducts', []);
+        } catch (error) {
+            console.error("Error al eliminar todos los productos:", error);
+            socket.emit('error', { message: 'No se pudo eliminar los productos.' });
         }
     });
 });

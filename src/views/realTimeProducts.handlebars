@@ -3,34 +3,19 @@
 <head>
     <title>Productos en Tiempo Real</title>
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-
-        socket.on('updateProducts', (products) => {
-            const productList = document.getElementById('product-list');
-            productList.innerHTML = '';
-            products.forEach(product => {
-                const li = document.createElement('li');
-                li.textContent = `${product.title} - $${product.price}`;
-                productList.appendChild(li);
-            });
-        });
-
-        function addProduct(event) {
-            event.preventDefault();
-            const title = document.getElementById('title').value;
-            const price = document.getElementById('price').value;
-            socket.emit('addProduct', { title, price });
-        }
-    </script>
+    <script src="/js/realTimeProducts.js" defer></script>
 </head>
 <body>
     <h1>Productos en Tiempo Real</h1>
     <ul id="product-list">
         {{#each products}}
-        <li>{{this.title}} - ${{this.price}}</li>
+        <li>
+            {{this.title}} - ${{this.price}}
+            <button onclick="deleteProduct({{this.id}})">Quitar</button>
+        </li>
         {{/each}}
     </ul>
+    <button onclick="deleteAllProducts()">Eliminar Todo</button>
     <form onsubmit="addProduct(event)">
         <input type="text" id="title" placeholder="Nombre del Producto" required>
         <input type="number" id="price" placeholder="Precio" required>
@@ -38,3 +23,5 @@
     </form>
 </body>
 </html>
+
+
