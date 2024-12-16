@@ -6,7 +6,7 @@ import ProductManager from './services/products.mananger.js';
 import { Server } from 'socket.io';
 
 const app = express();
-const PORT = 9090;
+const PORT = process.env.PORT || 9090;
 
 // Middleware
 app.use(express.json());
@@ -19,6 +19,14 @@ app.set('view engine', 'handlebars');
 
 // Directorio público
 app.use(express.static(__dirname + '/public'));
+
+app.get('/ping', (req, res) => {
+    res.render("index")
+})
+
+app.get('/realtimeproducts', (req, res) => {
+    res.render("realTimeProducts")
+})
 
 // Rutas
 app.use("/", viewsRoutes);

@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const productosFilePath = path.resolve('data',' productos.json');
+const productosFilePath = path.resolve('data','productos.json');
 
 
 export default class ProductMananger{   
